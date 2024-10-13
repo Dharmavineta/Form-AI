@@ -13,16 +13,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { readStreamableValue } from "ai/rsc";
 import { db } from "@/db";
 import { forms } from "@/db/schema";
 import { useUser } from "@clerk/nextjs";
+import { changeLoadingState } from "@/store";
 
 export function CreateForm() {
   const { user } = useUser();
   const [userInput, setUserInput] = useState<string>("");
+  const { isLoading, setIsLoading } = changeLoadingState();
 
   const onCreate = async () => {
+    setIsLoading(true);
     const result = await aiGenerate(userInput);
     if (result) {
       await db.insert(forms).values({
@@ -30,6 +32,7 @@ export function CreateForm() {
         createdBy: user?.fullName || user?.firstName || "User",
       });
     }
+    setIsLoading(false);
   };
 
   return (
@@ -64,15 +67,19 @@ export function CreateForm() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={onCreate}
-              type="submit"
-              className="flex gap-x-2"
-              size={"sm"}
-            >
-              <Sparkles className="w-4 h-4" />
-              Create Form
-            </Button>
+            {isLoading ? (
+              <Button>Loading...</Button>
+            ) : (
+              <Button
+                onClick={onCreate}
+                type="submit"
+                className="flex gap-x-2"
+                size={"sm"}
+              >
+                <Sparkles className="w-4 h-4" />
+                Create Form
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

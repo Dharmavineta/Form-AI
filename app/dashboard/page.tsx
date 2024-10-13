@@ -1,6 +1,5 @@
 import React from "react";
 import { CreateForm } from "./_components/create-form";
-import StreamedData from "./_components/streamed-file";
 
 const page = () => {
   return (
