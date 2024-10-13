@@ -26,6 +26,7 @@ const Sidebar = () => {
       path: "/dashboard/subscription",
     },
   ];
+
   return (
     <div className="hidden md:flex md:flex-col h-screen md:w-64 md:fixed border-r">
       <div className="flex flex-col h-full">
@@ -48,9 +49,9 @@ const Sidebar = () => {
           </div>
         </ScrollArea>
         <div className="md:fixed md:bottom-7 w-64 px-3 flex flex-col gap-y-5">
-          <Button variant="default" className="w-full">
+          {/* <Button variant="default" className="w-full">
             Create Form
-          </Button>
+          </Button> */}
           <div className="flex flex-col gap-y-2">
             <h1 className="text-sm">
               <strong>2</strong> Out of <strong>3</strong> forms created
