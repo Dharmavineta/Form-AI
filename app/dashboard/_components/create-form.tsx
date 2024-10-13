@@ -18,37 +18,43 @@ import { forms } from "@/db/schema";
 import { useUser } from "@clerk/nextjs";
 import { changeLoadingState } from "@/store";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function CreateForm() {
   const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [userInput, setUserInput] = useState<string>("");
   const { isLoading, setIsLoading } = changeLoadingState();
+  const router = useRouter();
 
   const onCreate = async () => {
     try {
       setIsLoading(true);
       const result = await aiGenerate(userInput);
       if (result) {
-        toast.promise(
-          async () => {
-            await createForm(
-              JSON.stringify(result.form, null, 2),
-              user?.firstName || user?.fullName || ""
-            );
-          },
-          {
-            loading: "Creating form...",
-            success: "Form created Successfully",
-            error: "Failed to create form",
-          }
+        const formId = await createForm(
+          JSON.stringify(result.form, null, 2),
+          user?.firstName || ""
         );
+        //  toast.promise(
+        //   async () => {
+        //     return await createForm(
+        //       JSON.stringify(result.form, null, 2),
+        //       user?.firstName || user?.fullName || ""
+        //     );
+        //   },
+        //   {
+        //     loading: "Creating form...",
+        //     success: "Form created Successfully",
+        //     error: "Failed to create form",
+        //   }
+        // );
+        router.push(`/form-page/${formId}`);
         setOpen(false);
       }
-
-      setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("An error occurred while creating the form");
     } finally {
       setIsLoading(false);
     }

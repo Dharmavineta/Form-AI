@@ -44,15 +44,19 @@ export const aiGenerate = async (userInput: string) => {
     model: google("gemini-1.5-pro-002"),
     output: "object",
     schema,
-    prompt: `Build me a complete form using shadcnUi with react using the given context. Give me the form only: ${userInput}`,
+    prompt: `Build me a complete form layout using the given context: ${userInput}`,
   });
 
   return form;
 };
 
 export const createForm = async (userInput: string, name: string) => {
-  await db.insert(forms).values({
-    jsonForm: JSON.stringify(userInput, null, 2),
-    createdBy: String(name),
-  });
+  const result = await db
+    .insert(forms)
+    .values({
+      jsonForm: JSON.stringify(userInput, null, 2),
+      createdBy: String(name),
+    })
+    .returning({ id: forms.id });
+  return result[0].id;
 };
