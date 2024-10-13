@@ -1,5 +1,5 @@
 "use client";
-import { aiGenerate } from "@/actions/server-actions";
+import { aiGenerate, createForm } from "@/actions/server-actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,33 +11,52 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Sparkles } from "lucide-react";
+import { Loader2, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { db } from "@/db";
 import { forms } from "@/db/schema";
 import { useUser } from "@clerk/nextjs";
 import { changeLoadingState } from "@/store";
+import { toast } from "sonner";
 
 export function CreateForm() {
   const { user } = useUser();
+  const [open, setOpen] = useState(false);
   const [userInput, setUserInput] = useState<string>("");
   const { isLoading, setIsLoading } = changeLoadingState();
 
   const onCreate = async () => {
-    setIsLoading(true);
-    const result = await aiGenerate(userInput);
-    if (result) {
-      await db.insert(forms).values({
-        jsonForm: JSON.stringify(result, null, 2),
-        createdBy: user?.fullName || user?.firstName || "User",
-      });
+    try {
+      setIsLoading(true);
+      const result = await aiGenerate(userInput);
+      if (result) {
+        toast.promise(
+          async () => {
+            await createForm(
+              JSON.stringify(result.form, null, 2),
+              user?.firstName || user?.fullName || ""
+            );
+          },
+          {
+            loading: "Creating form...",
+            success: "Form created Successfully",
+            error: "Failed to create form",
+          }
+        );
+        setOpen(false);
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
     <div>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button size={"sm"} className="flex gap-x-2">
             <Plus className="w-4 h-4" />
@@ -64,14 +83,18 @@ export function CreateForm() {
               type="submit"
               className="flex gap-x-2"
               size={"sm"}
+              onClick={() => setOpen(false)}
             >
               Cancel
             </Button>
             {isLoading ? (
-              <Button>Loading...</Button>
+              <Button>
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </Button>
             ) : (
               <Button
                 onClick={onCreate}
+                disabled={isLoading}
                 type="submit"
                 className="flex gap-x-2"
                 size={"sm"}
