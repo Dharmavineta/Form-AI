@@ -13,8 +13,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { db } from "@/db";
-import { forms } from "@/db/schema";
 import { useUser } from "@clerk/nextjs";
 import { changeLoadingState } from "@/store";
 import { toast } from "sonner";
